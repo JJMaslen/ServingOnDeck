@@ -14,6 +14,7 @@ public class Person : MonoBehaviour
     enum states { Entering, Sitting, Waiting, Eating, Leaving}
     states currentState;
 
+    public bool hasFood;
     bool isHappy;
     int waitingTimer;
     int eatingTimer;
@@ -50,24 +51,40 @@ public class Person : MonoBehaviour
             case states.Sitting:
                 if (isClose(person.transform.position, mySeat.position, 1.5f) == true)
                 {
-                    currentState = states.Eating;
+                    currentState = states.Waiting;
                 }
                 Debug.Log("I am Sitting");
                 break;
 
             case states.Waiting:
+                waitingTimer++;
 
+                if (waitingTimer > 2000)
+                {
+                    currentState = states.Leaving;
+                    isHappy = false;
+                    Debug.Log("I am not happy");
+                    mySeat.gameObject.GetComponent<Seat>().isTaken = false;
+                }
+
+                if (hasFood == true)
+                {
+                    isHappy = true;
+                    Debug.Log("I am happy");
+                    currentState = states.Eating;
+                }
                 Debug.Log("I am Waiting");
                 break;
 
             case states.Eating:
-                waitingTimer++;
-     
-                if (waitingTimer > 1)
+                eatingTimer++;
+
+                if (eatingTimer > 1000)
                 {
                     currentState = states.Leaving;
                     mySeat.gameObject.GetComponent<Seat>().isTaken = false;
                 }
+
                 Debug.Log("I am Eating");
                 break;
 

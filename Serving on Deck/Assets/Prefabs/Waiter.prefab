@@ -167,6 +167,7 @@ GameObject:
   - component: {fileID: 21969966205649208}
   - component: {fileID: 4346216959166386645}
   - component: {fileID: 1513889762784513712}
+  - component: {fileID: 3811882062969311185}
   m_Layer: 0
   m_Name: Waiter
   m_TagString: Untagged
@@ -225,3 +226,17 @@ NavMeshAgent:
   m_BaseOffset: -0.1
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
+--- !u!114 &3811882062969311185
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3897113728037729067}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 91d72f30d8fccaf4fab460ba785b2934, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  waitor: {fileID: 3897113728037729067}
+  hasFood: 0
