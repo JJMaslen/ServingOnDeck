@@ -5,11 +5,13 @@ using UnityEngine;
 public class SpawnPerson : MonoBehaviour
 {
     public GameObject Person;
+    public static Transform entrance;
 
+    int counter;
     // Start is called before the first frame update
     void Start()
     {
-        
+        counter = 0;
     }
 
     // Update is called once per frame
@@ -17,7 +19,17 @@ public class SpawnPerson : MonoBehaviour
     {
         if(Input.GetKeyDown(KeyCode.C))
         {
-            Instantiate(Person);
+            Instantiate(Person,entrance);
+        }
+    }
+
+    void FixedUpdate()
+    {
+        counter++;
+        if (counter >= 120)
+        {
+            Instantiate(Person, entrance);
+            counter = 0;
         }
     }
 }

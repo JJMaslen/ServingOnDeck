@@ -9,7 +9,7 @@ public class Seat : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        isTaken = false;
+        //isTaken = false;
     }
 
     // Update is called once per frame

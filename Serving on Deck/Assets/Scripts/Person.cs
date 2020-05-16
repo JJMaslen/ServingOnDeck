@@ -8,13 +8,15 @@ public class Person : MonoBehaviour
     public GameObject person;
     public Transform mySeat;
 
-    public Transform entrance;
-    public Transform exit;
+    public static Transform entrance;
+    public static Transform exit;
 
-    enum states { Entering, Eating, Leaving}
+    enum states { Entering, Sitting, Waiting, Eating, Leaving}
     states currentState;
 
-    int eatingTime;
+    bool isHappy;
+    int waitingTimer;
+    int eatingTimer;
 
     NavMeshAgent agent;
 
@@ -27,14 +29,7 @@ public class Person : MonoBehaviour
         entrance = GameObject.Find("Entrance").transform;
         exit = GameObject.Find("Exit").transform;
         person.transform.position = entrance.position;
-
-        eatingTime = 0;
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
+        waitingTimer = 0;
     }
 
     void FixedUpdate()
@@ -47,14 +42,28 @@ public class Person : MonoBehaviour
 
                 if (mySeat.position != entrance.position)
                 {
-                    currentState = states.Eating;
+                    currentState = states.Sitting;
                 }
                 Debug.Log("I am Entering");
                 break;
 
+            case states.Sitting:
+                if (isClose(person.transform.position, mySeat.position, 1.5f) == true)
+                {
+                    currentState = states.Eating;
+                }
+                Debug.Log("I am Sitting");
+                break;
+
+            case states.Waiting:
+
+                Debug.Log("I am Waiting");
+                break;
+
             case states.Eating:
-                eatingTime++;
-                if (eatingTime > 1000)
+                waitingTimer++;
+     
+                if (waitingTimer > 1)
                 {
                     currentState = states.Leaving;
                     mySeat.gameObject.GetComponent<Seat>().isTaken = false;
@@ -64,12 +73,25 @@ public class Person : MonoBehaviour
 
             case states.Leaving:
                 agent.destination = exit.position;
-                if (person.transform.position.x == exit.position.x && person.transform.position.z == exit.position.z)
+                if (isClose(person.transform.position, agent.destination, 3) == true)
                 {
                     Destroy(person);
                 }
                 Debug.Log("I am leaving");
                 break;
+        }
+    }
+
+    bool isClose(Vector3 a, Vector3 b, float threshold)
+    {
+        float distance = Vector3.Distance(a, b);
+        if (distance < threshold)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
         }
     }
 
