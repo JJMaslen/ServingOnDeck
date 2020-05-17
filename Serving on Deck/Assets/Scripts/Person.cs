@@ -7,14 +7,18 @@ public class Person : GenericPerson
 {
     public GameObject person;
     public Transform mySeat;
+    public GameObject food;
+    public GameObject happyObject;
+    public GameObject sadObject;
 
     public static Transform entrance;
     public static Transform exit;
 
-    enum states { Entering, Sitting, Waiting, Eating, Leaving}
-    states currentState;
+    public enum states { Entering, Sitting, Waiting, Eating, Leaving}
+    public states currentState;
 
     public bool hasFood;
+    public bool isBeingServed;
     bool isHappy;
     int waitingTimer;
     int eatingTimer;
@@ -24,13 +28,43 @@ public class Person : GenericPerson
     // Start is called before the first frame update
     void Start()
     {
-        agent = GetComponent<NavMeshAgent>();      
-        currentState = states.Entering;
+        agent = GetComponent<NavMeshAgent>();
+
+        food = transform.Find("Food").gameObject;
+        happyObject = transform.Find("Happy").gameObject;
+        sadObject = transform.Find("Sad").gameObject;
+
+        hasFood = false;
+        isBeingServed = false;
 
         entrance = GameObject.Find("Entrance").transform;
         exit = GameObject.Find("Exit").transform;
         person.transform.position = entrance.position;
-        waitingTimer = 0;
+
+        currentState = states.Entering;
+    }
+
+    void Update()
+    {
+        if (hasFood == true)
+        {
+            food.SetActive(true);
+        }
+        else
+        {
+            food.SetActive(false);
+        }
+
+        if (isHappy == true)
+        {
+            happyObject.SetActive(true);
+            sadObject.SetActive(false);
+        }
+        else
+        {
+            happyObject.SetActive(false);
+            sadObject.SetActive(true);
+        }
     }
 
     void FixedUpdate()
@@ -38,6 +72,7 @@ public class Person : GenericPerson
         switch (currentState)
         {
             case states.Entering:
+                person.GetComponent<NavMeshAgent>().enabled = true;
                 mySeat = findSeat();
                 agent.destination = mySeat.position;
 
@@ -49,7 +84,7 @@ public class Person : GenericPerson
                 break;
 
             case states.Sitting:
-                if (isClose(person.transform.position, mySeat.position, 1.5f) == true)
+                if (isClose(person.transform.position, mySeat.position, 2.0f) == true)
                 {
                     currentState = states.Waiting;
                 }
@@ -58,6 +93,9 @@ public class Person : GenericPerson
 
             case states.Waiting:
                 waitingTimer++;
+
+                person.GetComponent<NavMeshAgent>().enabled = false;
+                person.transform.position = new Vector3(mySeat.position.x, 1.15f, mySeat.position.z);
 
                 if (waitingTimer > 2000)
                 {
@@ -81,14 +119,17 @@ public class Person : GenericPerson
 
                 if (eatingTimer > 1000)
                 {
-                    currentState = states.Leaving;
                     mySeat.gameObject.GetComponent<Seat>().isTaken = false;
+                    hasFood = false;
+                    currentState = states.Leaving;
+
                 }
 
                 Debug.Log("I am Eating");
                 break;
 
             case states.Leaving:
+                person.GetComponent<NavMeshAgent>().enabled = true;
                 agent.destination = exit.position;
                 if (isClose(person.transform.position, agent.destination, 3) == true)
                 {

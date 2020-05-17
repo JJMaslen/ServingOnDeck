@@ -8,25 +8,41 @@ public class Waiter : GenericPerson
     public GameObject waitor;
     public Transform myServingTable;
     public GameObject myPerson;
+
+    GameObject ServingTables;
+
+    GameObject food;
     public bool hasFood;
 
-    enum states { Waiting, GettingFood, Serving}
+    enum states { Waiting, GettingFood, Serving, Recalculating}
     states currentState;
 
     NavMeshAgent agent;
+
+    int reCalcCounter;
 
     // Start is called before the first frame update
     void Start()
     {
         agent = GetComponent<NavMeshAgent>();
+        food = transform.Find("Food").gameObject;
         hasFood = false;
+
+        ServingTables = GameObject.Find("ServingTables");
         currentState = states.Waiting;
     }
 
     // Update is called once per frame
     void Update()
     {
-
+        if (hasFood == true)
+        {
+            food.SetActive(true);
+        }
+        else
+        {
+            food.SetActive(false);
+        }
     }
 
     void FixedUpdate()
@@ -34,26 +50,35 @@ public class Waiter : GenericPerson
         switch (currentState)
         {
             case states.Waiting:
-                if (isPersonAvailable() == true)
+                if (isPersonAvailable() == true && isServingTableAvailable() == true)
                 {
-                    myServingTable = findServingTable();
-                    agent.destination = myServingTable.position;
-                    currentState = states.GettingFood;
+                    if (findPerson() != waitor.transform && findServingTable() != waitor.transform)
+                    {
+                        myPerson.GetComponent<Person>().isBeingServed = true;
+
+                        agent.destination = myServingTable.position;
+                        currentState = states.GettingFood; 
+                    }
                 }
                 Debug.Log("I am Waiting (Waitor)");
                 break;
             case states.GettingFood:
                 if (isClose(waitor.transform.position, myServingTable.position, 2.0f) == true)
-                {
-                    myPerson = findPerson().gameObject;
+                { 
                     agent.destination = myPerson.transform.position;
+                    myServingTable.GetComponent<ServingTable>().inUse = true;
                     currentState = states.Serving;
                     hasFood = true;
                 }
                 Debug.Log("I am getting Food");
                 break;
             case states.Serving:
-                if (isClose(waitor.transform.position, myPerson.transform.position, 3.0f) == true)
+                if (myPerson == null || myPerson.GetComponent<Person>().hasFood == true || myPerson.GetComponent<Person>().currentState.ToString() == "Leaving")
+                {
+                    findPerson();
+                    agent.destination = myPerson.transform.position;
+                }
+                if (isClose(waitor.transform.position, myPerson.transform.position, 5.0f) == true)
                 {
                     agent.destination = waitor.transform.position;
                     currentState = states.Waiting;
@@ -70,7 +95,21 @@ public class Waiter : GenericPerson
         foreach (Transform child in SpawnPerson.People)
         {
             string state = child.gameObject.GetComponent<Person>().getState();
-            if (state == "Waiting")
+            bool beingServed = child.gameObject.GetComponent<Person>().isBeingServed;
+            if (state == "Waiting" && beingServed == false)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    bool isServingTableAvailable()
+    {
+        foreach (Transform child in ServingTables.transform)
+        {
+            bool state = child.gameObject.GetComponent<ServingTable>().inUse;
+            if (state == false)
             {
                 return true;
             }
@@ -82,14 +121,15 @@ public class Waiter : GenericPerson
     {
         Transform newGoal = waitor.transform;
 
-        foreach (Transform child in SpawnPerson.People)
+        int random = Random.Range(0, SpawnPerson.People.childCount);
+
+        Transform peopleList = SpawnPerson.People;
+        string state = peopleList.GetChild(random).gameObject.GetComponent<Person>().getState();
+
+        if (state == "Waiting")
         {
-            string state = child.gameObject.GetComponent<Person>().getState();
-            if (state == "Waiting")
-            {
-                newGoal = child.transform;
-                myPerson = child.gameObject;
-            }
+            newGoal = peopleList.GetChild(random).transform;
+            myPerson = peopleList.GetChild(random).gameObject;
         }
         return newGoal;
     }
@@ -97,17 +137,14 @@ public class Waiter : GenericPerson
     Transform findServingTable()
     {
         Transform newGoal = waitor.transform;
-        GameObject ServingTables = GameObject.Find("ServingTables");
-        foreach (Transform child in ServingTables.transform)
-        {
-            if (child.GetComponent<ServingTable>().hasFood == true)
-            {
-                newGoal = child.transform;
-                break;
-                //child.GetComponent<ServingTable>().hasFood = false;
-            }
-        }
 
+        int random = Random.Range(0, ServingTables.transform.childCount);
+
+        if (ServingTables.transform.GetChild(random).gameObject.GetComponent<ServingTable>().inUse == false)
+        {
+            newGoal = ServingTables.transform.GetChild(random).transform;
+            myServingTable = ServingTables.transform.GetChild(random);
+        }
         return newGoal;
     }
 }
