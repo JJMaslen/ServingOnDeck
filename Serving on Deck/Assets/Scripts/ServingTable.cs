@@ -10,7 +10,8 @@ public class ServingTable : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+        hasFood = true;
+        inUse = false;
     }
 
     // Update is called once per frame

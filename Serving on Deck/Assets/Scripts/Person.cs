@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class Person : MonoBehaviour
+public class Person : GenericPerson
 {
     public GameObject person;
     public Transform mySeat;
@@ -99,17 +99,15 @@ public class Person : MonoBehaviour
         }
     }
 
-    bool isClose(Vector3 a, Vector3 b, float threshold)
+    public string getState()
     {
-        float distance = Vector3.Distance(a, b);
-        if (distance < threshold)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+        string currentStateString = currentState.ToString();
+        return currentStateString;
+    }
+
+    public void setFoodTrue()
+    {
+        hasFood = true;
     }
 
     Transform findSeat()
